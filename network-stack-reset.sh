@@ -7,6 +7,7 @@ DOCKER_SERVICE_PRESENT=0
 DOCKER_SOCKET_PRESENT=0
 DOCKER_SERVICE_ACTIVE=0
 DOCKER_SOCKET_ACTIVE=0
+TEMP_STARTED_DOCKER_SERVICE=0
 DOCKER_BRIDGES=("docker0")
 
 usage() {
@@ -242,12 +243,13 @@ if [ "${DOCKER_PRESENT}" -eq 1 ]; then
     elif [ "${DOCKER_SERVICE_PRESENT}" -eq 1 ] && [ "${DOCKER_SOCKET_ACTIVE}" -eq 1 ]; then
         log "Temporarily starting Docker service to rebuild default networking..."
         systemctl start docker.service
+        TEMP_STARTED_DOCKER_SERVICE=1
     fi
     if [ "${DOCKER_SOCKET_PRESENT}" -eq 1 ] && [ "${DOCKER_SOCKET_ACTIVE}" -eq 1 ]; then
         log "Restoring Docker socket..."
         systemctl start docker.socket
     fi
-    if [ "${DOCKER_SERVICE_PRESENT}" -eq 1 ] && [ "${DOCKER_SERVICE_ACTIVE}" -eq 0 ] && [ "${DOCKER_SOCKET_ACTIVE}" -eq 1 ]; then
+    if [ "${TEMP_STARTED_DOCKER_SERVICE}" -eq 1 ]; then
         if wait_for_docker_network_rebuild; then
             log "Returning Docker to socket activation mode..."
             systemctl stop docker.service || true

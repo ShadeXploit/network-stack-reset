@@ -75,7 +75,7 @@ After a successful run:
 - stale Docker bridge interfaces should be removed
 - firewall chains should be reset to `ACCEPT`
 - the `nftables` ruleset should be cleared when `nft` is available
-- if Docker was active before the reset, it should recreate its default networking when the script restores the prior Docker activation mode
+- if Docker service or socket activation was active before the reset, Docker should recreate its default networking when the script restores the prior activation mode
 
 ## Troubleshooting
 

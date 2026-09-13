@@ -7,6 +7,7 @@ DOCKER_SERVICE_PRESENT=0
 DOCKER_SOCKET_PRESENT=0
 DOCKER_SERVICE_ACTIVE=0
 DOCKER_SOCKET_ACTIVE=0
+DOCKER_BRIDGES=()
 
 usage() {
   cat <<EOF
@@ -39,6 +40,36 @@ has_systemd_unit() {
       return 0
     fi
   done < <(systemctl list-unit-files --no-legend 2>/dev/null)
+
+  return 1
+}
+
+collect_docker_bridges() {
+  local network_id
+  local bridge_name
+
+  if ! command -v docker >/dev/null 2>&1; then
+    return
+  fi
+
+  mapfile -t docker_network_ids < <(docker network ls --filter driver=bridge --quiet 2>/dev/null || true)
+  for network_id in "${docker_network_ids[@]}"; do
+    bridge_name="$(docker network inspect --format '{{index .Options "com.docker.network.bridge.name"}}' "$network_id" 2>/dev/null || true)"
+    if [ -n "$bridge_name" ]; then
+      DOCKER_BRIDGES+=("$bridge_name")
+    fi
+  done
+}
+
+is_known_docker_bridge() {
+  local intf="$1"
+  local bridge_name
+
+  for bridge_name in "${DOCKER_BRIDGES[@]}"; do
+    if [ "$bridge_name" = "$intf" ]; then
+      return 0
+    fi
+  done
 
   return 1
 }
@@ -100,6 +131,9 @@ if [ "${DOCKER_SERVICE_PRESENT}" -eq 1 ] || [ "${DOCKER_SOCKET_PRESENT}" -eq 1 ]
   if [ "${DOCKER_SOCKET_PRESENT}" -eq 1 ] && systemctl is-active --quiet docker.socket; then
     DOCKER_SOCKET_ACTIVE=1
   fi
+  if [ "${DOCKER_SERVICE_ACTIVE}" -eq 1 ] || [ "${DOCKER_SOCKET_ACTIVE}" -eq 1 ]; then
+    collect_docker_bridges
+  fi
   if [ "${DOCKER_SERVICE_PRESENT}" -eq 1 ]; then
     log "Stopping Docker service..."
     systemctl stop docker.service || true
@@ -157,7 +191,7 @@ mapfile -t docker_interfaces < <(
     intf="${raw_name# }"
     intf="${intf%@*}"
 
-    if [[ "$intf" =~ ^br-[[:alnum:]]+$ || "$intf" =~ ^veth[[:xdigit:]]+$ ]]; then
+    if is_known_docker_bridge "$intf" || [[ "$intf" =~ ^veth[[:xdigit:]]+$ ]]; then
       printf '%s\n' "$intf"
     fi
   done

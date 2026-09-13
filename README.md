@@ -10,7 +10,7 @@ The script:
 - flushes IPv4 firewall rules with `iptables`
 - flushes IPv6 firewall rules when `ip6tables` is available
 - flushes the `nftables` ruleset when `nft` is available
-- removes `docker0`, Docker-style `br-<alphanumeric>` bridges, and Docker-style `veth<hex>` interfaces
+- removes `docker0`, Docker bridge interfaces discovered from Docker metadata, and Docker-style `veth<hex>` interfaces
 - clears Docker network state files
 - restarts the detected network manager
 - restores Docker service and socket activation only when they were active before the reset

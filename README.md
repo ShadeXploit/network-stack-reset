@@ -8,7 +8,7 @@ The script:
 
 - stops Docker so bridge interfaces and namespaces can be released
 - flushes IPv4 firewall rules with `iptables`
-- flushes IPv6 firewall rules when `ip6tables` is available
+- flushes IPv6 firewall rules when `ip6tables` is available, with optional tables cleaned up on a best-effort basis
 - flushes the `nftables` ruleset when `nft` is available
 - removes `docker0`, Docker bridge interfaces discovered from Docker metadata, and Docker-style `veth<hex>` interfaces
 - clears Docker network state files
@@ -79,7 +79,7 @@ After a successful run:
 ## Troubleshooting
 
 - If the script says a required command is missing, install that package first and run again.
-- If Docker is not installed as a `systemd` service, the Docker restart steps are skipped.
+- If Docker is not installed as a `systemd` service or socket, the Docker restart steps are skipped.
 - If you are connected over SSH and depend on custom firewall rules, re-apply them after running the script.
 
 ## File overview

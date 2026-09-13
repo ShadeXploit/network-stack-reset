@@ -34,25 +34,25 @@ Running it will remove active firewall rules and reset Docker networking state o
 Make the script executable if needed:
 
 ```bash
-chmod +x /home/runner/work/network-stack-reset/network-stack-reset/network-stack-reset.sh
+chmod +x ./network-stack-reset.sh
 ```
 
 Show help:
 
 ```bash
-sudo /home/runner/work/network-stack-reset/network-stack-reset/network-stack-reset.sh --help
+sudo ./network-stack-reset.sh --help
 ```
 
 Run with confirmation:
 
 ```bash
-sudo /home/runner/work/network-stack-reset/network-stack-reset/network-stack-reset.sh
+sudo ./network-stack-reset.sh
 ```
 
 Run without confirmation:
 
 ```bash
-sudo /home/runner/work/network-stack-reset/network-stack-reset/network-stack-reset.sh --yes
+sudo ./network-stack-reset.sh --yes
 ```
 
 ## When to use it
@@ -80,4 +80,4 @@ After a successful run:
 
 ## File overview
 
-- `/home/runner/work/network-stack-reset/network-stack-reset/network-stack-reset.sh` — main reset script
+- `./network-stack-reset.sh` — main reset script

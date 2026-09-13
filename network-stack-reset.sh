@@ -124,7 +124,18 @@ ip link set docker0 down 2>/dev/null || true
 ip link delete docker0 type bridge 2>/dev/null || true
 
 # Remove any remaining docker custom bridges or orphaned veth pairs
-mapfile -t docker_interfaces < <(ip -o link show | grep -oE '(br-[0-9a-f]+|veth[0-9a-f]+)' || true)
+mapfile -t docker_interfaces < <(
+  ip -o link show | while IFS=: read -r _ raw_name _; do
+    intf="${raw_name# }"
+    intf="${intf%@*}"
+
+    case "$intf" in
+      br-[0-9a-f]*|veth[0-9a-f]*)
+        printf '%s\n' "$intf"
+        ;;
+    esac
+  done
+)
 for intf in "${docker_interfaces[@]}"; do
     log "Deleting interface: $intf"
     ip link set "$intf" down 2>/dev/null || true

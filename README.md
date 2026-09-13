@@ -27,6 +27,9 @@ Running it will remove active firewall rules and reset Docker networking state o
 - root or `sudo` access
 - `ip`
 - `iptables`
+- `grep`
+- `rm`
+- `systemctl`
 - Docker installed if you want Docker to be restarted automatically
 
 ## Usage

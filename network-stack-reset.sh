@@ -157,7 +157,7 @@ mapfile -t docker_interfaces < <(
     intf="${raw_name# }"
     intf="${intf%@*}"
 
-    if [[ "$intf" =~ ^br-[[:xdigit:]]+$ || "$intf" =~ ^veth[[:xdigit:]]+$ ]]; then
+    if [[ "$intf" =~ ^br-[[:alnum:]]{12}$ || "$intf" =~ ^veth[[:xdigit:]]+$ ]]; then
       printf '%s\n' "$intf"
     fi
   done

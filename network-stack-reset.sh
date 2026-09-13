@@ -3,6 +3,8 @@ set -euo pipefail
 
 SCRIPT_NAME="${0##*/}"
 ASSUME_YES=0
+DOCKER_SERVICE_PRESENT=0
+DOCKER_SOCKET_PRESENT=0
 DOCKER_SERVICE_ACTIVE=0
 DOCKER_SOCKET_ACTIVE=0
 
@@ -32,7 +34,7 @@ die() {
 }
 
 has_systemd_unit() {
-  systemctl list-unit-files --type=service --no-legend 2>/dev/null | grep -q "^$1"
+  systemctl list-unit-files --no-legend 2>/dev/null | grep -q "^$1"
 }
 
 while [ "$#" -gt 0 ]; do
@@ -78,6 +80,13 @@ log "Starting complete network stack and Docker reset..."
 
 DOCKER_PRESENT=0
 if has_systemd_unit "docker.service"; then
+  DOCKER_SERVICE_PRESENT=1
+fi
+if has_systemd_unit "docker.socket"; then
+  DOCKER_SOCKET_PRESENT=1
+fi
+
+if [ "${DOCKER_SERVICE_PRESENT}" -eq 1 ] || [ "${DOCKER_SOCKET_PRESENT}" -eq 1 ]; then
   DOCKER_PRESENT=1
   if systemctl is-active --quiet docker.service; then
     DOCKER_SERVICE_ACTIVE=1
@@ -85,11 +94,16 @@ if has_systemd_unit "docker.service"; then
   if systemctl is-active --quiet docker.socket; then
     DOCKER_SOCKET_ACTIVE=1
   fi
-  log "Stopping Docker service..."
-  systemctl stop docker.service || true
-  systemctl stop docker.socket || true
+  if [ "${DOCKER_SERVICE_PRESENT}" -eq 1 ]; then
+    log "Stopping Docker service..."
+    systemctl stop docker.service || true
+  fi
+  if [ "${DOCKER_SOCKET_PRESENT}" -eq 1 ]; then
+    log "Stopping Docker socket..."
+    systemctl stop docker.socket || true
+  fi
 else
-  warn "Docker service not found. Docker stop/start steps will be skipped."
+  warn "Docker service/socket units not found. Docker stop/start steps will be skipped."
 fi
 
 # 2. Flush and reset iptables / nftables
@@ -163,11 +177,11 @@ fi
 
 # 5. Restart Docker daemon to let it rebuild default networks cleanly
 if [ "${DOCKER_PRESENT}" -eq 1 ]; then
-    if [ "${DOCKER_SERVICE_ACTIVE}" -eq 1 ]; then
+    if [ "${DOCKER_SERVICE_PRESENT}" -eq 1 ] && [ "${DOCKER_SERVICE_ACTIVE}" -eq 1 ]; then
         log "Restarting Docker service..."
         systemctl start docker.service
     fi
-    if [ "${DOCKER_SOCKET_ACTIVE}" -eq 1 ]; then
+    if [ "${DOCKER_SOCKET_PRESENT}" -eq 1 ] && [ "${DOCKER_SOCKET_ACTIVE}" -eq 1 ]; then
         log "Restoring Docker socket..."
         systemctl start docker.socket
     fi

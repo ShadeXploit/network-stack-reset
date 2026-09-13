@@ -74,7 +74,7 @@ After a successful run:
 
 - stale Docker bridge interfaces should be removed
 - firewall chains should be reset to `ACCEPT`
-- Docker should recreate its default networking on restart
+- if Docker was active before the reset, it should recreate its default networking when its service or socket is restored
 
 ## Troubleshooting
 

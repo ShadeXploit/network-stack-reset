@@ -129,11 +129,9 @@ mapfile -t docker_interfaces < <(
     intf="${raw_name# }"
     intf="${intf%@*}"
 
-    case "$intf" in
-      br-[0-9a-f]*|veth[0-9a-f]*)
-        printf '%s\n' "$intf"
-        ;;
-    esac
+    if [[ "$intf" =~ ^br-[0-9a-f]{12}$ || "$intf" =~ ^veth[0-9a-f]{7,11}$ ]]; then
+      printf '%s\n' "$intf"
+    fi
   done
 )
 for intf in "${docker_interfaces[@]}"; do

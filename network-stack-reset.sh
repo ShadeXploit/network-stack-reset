@@ -7,7 +7,7 @@ DOCKER_SERVICE_PRESENT=0
 DOCKER_SOCKET_PRESENT=0
 DOCKER_SERVICE_ACTIVE=0
 DOCKER_SOCKET_ACTIVE=0
-DOCKER_BRIDGES=()
+DOCKER_BRIDGES=("docker0")
 
 usage() {
   cat <<EOF
@@ -217,7 +217,7 @@ fi
 
 # 5. Restart Docker daemon to let it rebuild default networks cleanly
 if [ "${DOCKER_PRESENT}" -eq 1 ]; then
-    if [ "${DOCKER_SERVICE_PRESENT}" -eq 1 ] && [ "${DOCKER_SERVICE_ACTIVE}" -eq 1 ]; then
+    if [ "${DOCKER_SERVICE_PRESENT}" -eq 1 ] && { [ "${DOCKER_SERVICE_ACTIVE}" -eq 1 ] || [ "${DOCKER_SOCKET_ACTIVE}" -eq 1 ]; }; then
         log "Restarting Docker service..."
         systemctl start docker.service
     fi

@@ -31,7 +31,7 @@ Running it will remove active firewall rules and reset Docker networking state o
 - `grep`
 - `rm`
 - `systemctl`
-- Docker installed if you want Docker to be restarted automatically
+- Docker installed as a `systemd` service or socket if you want it restored automatically when it was already active
 
 ## Usage
 

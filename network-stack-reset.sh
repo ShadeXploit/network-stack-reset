@@ -34,7 +34,13 @@ die() {
 }
 
 has_systemd_unit() {
-  systemctl list-unit-files --no-legend 2>/dev/null | grep -q "^$1"
+  while read -r unit_name _; do
+    if [ "$unit_name" = "$1" ]; then
+      return 0
+    fi
+  done < <(systemctl list-unit-files --no-legend 2>/dev/null)
+
+  return 1
 }
 
 while [ "$#" -gt 0 ]; do
@@ -64,7 +70,7 @@ for cmd in ip iptables systemctl grep rm; do
 done
 
 if [ "${ASSUME_YES}" -ne 1 ]; then
-  warn "This will flush firewall rules, remove Docker bridge interfaces, restart networking services, and restart Docker if it is installed."
+  warn "This will flush firewall rules, remove Docker bridge interfaces, restart networking services, and restore Docker only if its service or socket was active before the reset."
   read -r -p "Continue? [y/N] " reply
   case "$reply" in
     [yY]|[yY][eE][sS])

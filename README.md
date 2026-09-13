@@ -24,6 +24,7 @@ Running it will remove active firewall rules and reset Docker networking state o
 ## Requirements
 
 - Linux system with `systemd`
+- Bash 4+ (`mapfile` is used)
 - root or `sudo` access
 - `ip`
 - `iptables`

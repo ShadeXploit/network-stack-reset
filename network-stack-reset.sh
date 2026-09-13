@@ -94,10 +94,10 @@ fi
 
 if [ "${DOCKER_SERVICE_PRESENT}" -eq 1 ] || [ "${DOCKER_SOCKET_PRESENT}" -eq 1 ]; then
   DOCKER_PRESENT=1
-  if systemctl is-active --quiet docker.service; then
+  if [ "${DOCKER_SERVICE_PRESENT}" -eq 1 ] && systemctl is-active --quiet docker.service; then
     DOCKER_SERVICE_ACTIVE=1
   fi
-  if systemctl is-active --quiet docker.socket; then
+  if [ "${DOCKER_SOCKET_PRESENT}" -eq 1 ] && systemctl is-active --quiet docker.socket; then
     DOCKER_SOCKET_ACTIVE=1
   fi
   if [ "${DOCKER_SERVICE_PRESENT}" -eq 1 ]; then
@@ -131,10 +131,10 @@ if command -v ip6tables &> /dev/null; then
     log "Flushing IPv6 firewall rules..."
     ip6tables -F
     ip6tables -t nat -F || true
-    ip6tables -t mangle -F
+    ip6tables -t mangle -F || true
     ip6tables -X
     ip6tables -t nat -X || true
-    ip6tables -t mangle -X
+    ip6tables -t mangle -X || true
     ip6tables -P INPUT ACCEPT
     ip6tables -P FORWARD ACCEPT
     ip6tables -P OUTPUT ACCEPT

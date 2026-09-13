@@ -240,19 +240,23 @@ if [ "${DOCKER_PRESENT}" -eq 1 ]; then
     if [ "${DOCKER_SERVICE_PRESENT}" -eq 1 ] && [ "${DOCKER_SERVICE_ACTIVE}" -eq 1 ]; then
         log "Restarting Docker service..."
         systemctl start docker.service
+        if [ "${DOCKER_SOCKET_PRESENT}" -eq 1 ] && [ "${DOCKER_SOCKET_ACTIVE}" -eq 1 ]; then
+            log "Restoring Docker socket..."
+            systemctl start docker.socket
+        fi
     elif [ "${DOCKER_SERVICE_PRESENT}" -eq 1 ] && [ "${DOCKER_SOCKET_ACTIVE}" -eq 1 ]; then
         log "Temporarily starting Docker service to rebuild default networking..."
         systemctl start docker.service
         TEMP_STARTED_DOCKER_SERVICE=1
     fi
-    if [ "${DOCKER_SOCKET_PRESENT}" -eq 1 ] && [ "${DOCKER_SOCKET_ACTIVE}" -eq 1 ]; then
-        log "Restoring Docker socket..."
-        systemctl start docker.socket
-    fi
     if [ "${TEMP_STARTED_DOCKER_SERVICE}" -eq 1 ]; then
         if wait_for_docker_network_rebuild; then
             log "Returning Docker to socket activation mode..."
             systemctl stop docker.service || true
+            if [ "${DOCKER_SOCKET_PRESENT}" -eq 1 ] && [ "${DOCKER_SOCKET_ACTIVE}" -eq 1 ]; then
+                log "Restoring Docker socket..."
+                systemctl start docker.socket
+            fi
         else
             warn "Leaving Docker service running because networking rebuild could not be confirmed."
         fi

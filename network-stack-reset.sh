@@ -193,4 +193,4 @@ if [ "${DOCKER_PRESENT}" -eq 1 ]; then
     fi
 fi
 
-echo "[✓] Network stack and Docker networks successfully reset to default state."
+log "Network stack and Docker networks successfully reset to default state."

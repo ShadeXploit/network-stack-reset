@@ -74,6 +74,25 @@ is_known_docker_bridge() {
   return 1
 }
 
+wait_for_docker_network_rebuild() {
+  local attempt
+
+  for attempt in 1 2 3 4 5; do
+    if ip link show docker0 >/dev/null 2>&1; then
+      return 0
+    fi
+
+    if command -v docker >/dev/null 2>&1 && docker network inspect bridge >/dev/null 2>&1; then
+      return 0
+    fi
+
+    sleep 1
+  done
+
+  warn "Timed out waiting for Docker to rebuild its default networking."
+  return 1
+}
+
 while [ "$#" -gt 0 ]; do
   case "$1" in
     -y|--yes)
@@ -229,8 +248,12 @@ if [ "${DOCKER_PRESENT}" -eq 1 ]; then
         systemctl start docker.socket
     fi
     if [ "${DOCKER_SERVICE_PRESENT}" -eq 1 ] && [ "${DOCKER_SERVICE_ACTIVE}" -eq 0 ] && [ "${DOCKER_SOCKET_ACTIVE}" -eq 1 ]; then
-        log "Returning Docker to socket activation mode..."
-        systemctl stop docker.service || true
+        if wait_for_docker_network_rebuild; then
+            log "Returning Docker to socket activation mode..."
+            systemctl stop docker.service || true
+        else
+            warn "Leaving Docker service running because networking rebuild could not be confirmed."
+        fi
     fi
 fi
 

@@ -13,7 +13,7 @@ The script:
 - removes `docker0`, Docker bridge interfaces discovered from Docker metadata, and Docker-style `veth<hex>` interfaces
 - clears Docker network state files
 - restarts the detected network manager
-- starts Docker again when its service or socket was active before the reset, then restores socket activation if needed
+- restarts Docker if the service was already active, or briefly starts it to rebuild networking before returning to socket activation mode when only the socket was active
 
 ## Important warning
 
@@ -31,7 +31,7 @@ Running it will remove active firewall rules and reset Docker networking state o
 - `grep`
 - `rm`
 - `systemctl`
-- Docker CLI plus Docker installed as a `systemd` service or socket if you want it restored automatically when it was already active
+- Docker CLI plus Docker installed as a `systemd` service or socket if you want Docker-aware bridge cleanup and state restoration
 
 ## Usage
 
@@ -74,7 +74,7 @@ After a successful run:
 
 - stale Docker bridge interfaces should be removed
 - firewall chains should be reset to `ACCEPT`
-- if Docker was active before the reset, it should recreate its default networking when its service or socket is restored
+- if Docker was active before the reset, it should recreate its default networking when the script restores the prior Docker activation mode
 
 ## Troubleshooting
 

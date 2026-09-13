@@ -3,6 +3,7 @@ set -euo pipefail
 
 SCRIPT_NAME="${0##*/}"
 ASSUME_YES=0
+DOCKER_SERVICE_ACTIVE=0
 DOCKER_SOCKET_ACTIVE=0
 
 usage() {
@@ -78,6 +79,9 @@ log "Starting complete network stack and Docker reset..."
 DOCKER_PRESENT=0
 if has_systemd_unit "docker.service"; then
   DOCKER_PRESENT=1
+  if systemctl is-active --quiet docker.service; then
+    DOCKER_SERVICE_ACTIVE=1
+  fi
   if systemctl is-active --quiet docker.socket; then
     DOCKER_SOCKET_ACTIVE=1
   fi
@@ -159,8 +163,10 @@ fi
 
 # 5. Restart Docker daemon to let it rebuild default networks cleanly
 if [ "${DOCKER_PRESENT}" -eq 1 ]; then
-    log "Restarting Docker service..."
-    systemctl start docker.service
+    if [ "${DOCKER_SERVICE_ACTIVE}" -eq 1 ]; then
+        log "Restarting Docker service..."
+        systemctl start docker.service
+    fi
     if [ "${DOCKER_SOCKET_ACTIVE}" -eq 1 ]; then
         log "Restoring Docker socket..."
         systemctl start docker.socket

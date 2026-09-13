@@ -13,7 +13,7 @@ The script:
 - removes `docker0`, Docker-style `br-<hex>` bridges, and Docker-style `veth<hex>` interfaces
 - clears Docker network state files
 - restarts the detected network manager
-- starts Docker again if the Docker service exists
+- restores Docker service and socket activation only when they were active before the reset
 
 ## Important warning
 
